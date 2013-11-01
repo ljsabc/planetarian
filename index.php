@@ -59,7 +59,7 @@
 			  		});
 			  		currentPosition+=1;
 			  		availableCache-=1;
-			  		if(currentPosition-availableCache<=10)
+			  		if(availableCache-currentPosition<=10)
 			  		{
 			  			$.ajax({
 						  dataType: "json",
@@ -228,7 +228,7 @@
 			if(senum!="0")
 				playMusic("se","se/se0"+senum+".ogg");
 			$("#talk"+id).typewrite({
-			    'delay': 40, 		//time in ms between each letter
+			    'delay': 25, 		//time in ms between each letter
 			    'extra_char': '', 	//"cursor" character to append after each display
 			    'trim': true, 		// Trim the string to type (Default: false, does not trim)
 			    'callback': null 	// if exists, called after all effects have finished
