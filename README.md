@@ -5,6 +5,8 @@ planetarian ～ちいさなほしのゆめ～
 
 This is a simple HTML port of Kinetic Visual Novel "planetarian".
 
-Still lots of work to be done.
+Now it has an opening theme _exactly_ same as the original one. Scripts and voices are correct at this moment. Caches are used to reduce multiple server load and ajax latency.
 
-See you later.
+I placed a web demo, located at: http://willlove.me/planetarian/
+
+Feel free to see the latest changes. If you would like to contact me, please mail to ljsabc##gmail.com.
