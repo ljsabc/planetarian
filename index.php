@@ -29,6 +29,75 @@
 	<script type="text/javascript" src="jquery.js"></script>
 	<script type="text/javascript" src="typewriter.js"></script>
 	<script type="text/javascript">
+		var currentPosition=6;
+		var availableCache=0;
+		var dialogCache=new Array();
+		function beginChapter(position,ending,endingFunction)
+		{
+			//showNowLoading();
+			$.ajax({
+			  dataType: "json",
+			  url: "getContent.php",
+			  method: "get",
+			  data: {"id":position,"size":50},
+			  success: function(data){
+			  	say(data[0].words,data[0].swipescreen,data[0].linebreak,data[0].position,data[0].voice,data[0].bgm,data[0].se,function(){});
+
+			  	setTimeout(cacheResources(data,50),0);
+				/*while(currentPosition<ending)
+				{
+					$("#mainFrame").bind("click",function(e){
+						//sayTheNextThing();
+					})
+				}*/
+				if(typeof(endingFunction)==='function')
+					endingFunction();
+				  }
+			});
+		}
+		function cacheResources(data,length)
+		{
+			var imageCache=new Array();
+			var bgmCache=new Array();
+			var seCache=new Array();
+			var voiceCache=new Array();
+			for(i=0;i<data.length;i++)
+			{
+				console.log(i);
+				console.log(data[i]);
+				if(data[i].voice!="0"&&data[i].voice)
+				{
+					var t=new Audio();
+					t.src="k/k%20("+data[i].voice+").ogg";
+					voiceCache.push(t);
+				}
+				if(data[i].bgm!="0"&&data[i].bgm)
+				{
+					var t=new Audio();
+					t.src="bgm/bgm0"+data[i].bgm+".ogg";
+					bgmCache.push(t);
+				}
+				if(data[i].se!="0"&&data[i].se)
+				{
+					var t=new Audio();
+					t.src="se/se"+data[i].se+".ogg";
+					seCache.push(t); 
+				}
+				if(data[i].lh!="0"&&data[i].lh)
+				{
+					var t=new Image();
+					t.src="pic/lh/"+data[i].lh;
+					imageCache.push(t);
+				}
+				if(data[i].words)
+				{
+					dialogCache[data[i].location]=data[i].words;
+				}
+				availableCache+=length;
+			}
+
+		}
+
 		function appendBlackbg()
 		{
 			if(!$("#blackFrame").length)
@@ -117,20 +186,25 @@
 				$("#"+target).attr("src",src);
 			$("#"+target).trigger("play");
 		}
-		function say(words,clear,linebreak,voicenum,additionalFunction)
+		function say(words,clear,linebreak,id,voicenum,bgmnum,senum,additionalFunction)
 		{
 			if(clear)
 				$("#talkbox").html("");
 			if(linebreak)
-				$("#talkbox").append("<span id='"+voicenum+"'>"+words+"</span><br/>");
+				$("#talkbox").append("<span id='talk"+id+"'>"+words+"</span><br/>");
 			else
-				$("#talkbox").append("<span id='"+voicenum+"'>"+words+"</span>");
-			playMusic("voice","k/k%20("+voicenum+").ogg");
-			$("#"+voicenum).typewrite({
-			    'delay': 40, //time in ms between each letter
-			    'extra_char': '', //"cursor" character to append after each display
-			    'trim': true, // Trim the string to type (Default: false, does not trim)
-			    'callback': null // if exists, called after all effects have finished
+				$("#talkbox").append("<span id='talk"+id+"'>"+words+"</span>");
+			if(voicenum)
+				playMusic("voice","k/k%20("+voicenum+").ogg");
+			if(bgmnum)
+				playMusic("bgm","bgm/bgm0"+bgmnum+".ogg");
+			if(senum)
+				playMusic("voice","se/se0"+senum+".ogg");
+			$("#talk"+voicenum).typewrite({
+			    'delay': 40, 		//time in ms between each letter
+			    'extra_char': '', 	//"cursor" character to append after each display
+			    'trim': true, 		// Trim the string to type (Default: false, does not trim)
+			    'callback': null 	// if exists, called after all effects have finished
 			});
 			if(typeof(additionalFunction)==='function')
 				additionalFunction();
@@ -162,17 +236,18 @@
 									                       ($.browser.msie)    ? '-ms-transition' :
 									                       ($.browser.opera)   ? '-o-transition' : 'transition',
 					       					 myCSSObj = { "background-position":"-480px 0px" };
-					       					 myCSSObj[myTransition] = 'background 15s ease-in-out';
+					       					 myCSSObj[myTransition] = 'background 15s linear';
     										 $("#intro_scroll").css(myCSSObj);
 									},500);
 									addBlock("bottom","talkbox","",640,130,0);
-									say("……欢迎大家光临天象馆……",1,1,"1",function(){
+									//words,clear,linebreak,id,voicenum,bgmnum,senum,additionalFunction
+									say("……欢迎大家光临天象馆……",1,1,"1",1,0,0,function(){
 										$("#mainFrame").one('click',function(e){
-											say("……这里有着无论何时都决不会消失的，美丽的无穷光辉……",1,1,"2",function(){
+											say("……这里有着无论何时都决不会消失的，美丽的无穷光辉……",1,1,"2",2,0,0,function(){
 												$("#mainFrame").one('click',function(e){
-													say("……满天的星星们正在等待着大家的到来……",1,1,"3",function(){
+													say("……满天的星星们正在等待着大家的到来……",1,1,"3",3,0,0,function(){
 														$("#mainFrame").one('click',function(e){
-															say("……欢迎大家光临天象馆……",1,1,"4",function(){
+															say("……欢迎大家光临天象馆……",1,1,"4",4,0,0,function(){
 																//resizing animation
 																var myTransition = ($.browser.webkit)  ? '-webkit-transition' :
 															                       ($.browser.mozilla) ? '-moz-transition' : 
@@ -210,6 +285,7 @@
 
 								    											// Fire Up!
 								    											// Main Entry Here.
+								    											beginChapter(6,100,function(){});
 								    										});
 								    										$("#intro_scroll").css(
 								    											{
