@@ -1,12 +1,28 @@
 <?php 
-mb_internal_encoding("UTF-8"); 
+	include 'config.php' 
 ?>
-<?php include 'config.php' ?>
 <?php
 //TODO:for a certain buffer start address, fetch an array of words, transitions and images.
-	function packjson($word)
+	function myjson($code)
 	{
-		return preg_replace("#\\\u([0-9a-f]+)#ie","iconv('UCS-2','UTF-8',pack('H4','\\1'))",$word);
+		$code = json_encode(urlencodeAry($code));
+		return urldecode($code);
+	}
+
+	function urlencodeAry($data)
+	{
+		if(is_array($data))
+		{
+			foreach($data as $key=>$val)
+			{
+				$data[$key] = urlencodeAry($val);
+			}
+			return $data;
+		}
+		else
+		{
+			return urlencode($data);
+		}
 	}
 	if(!empty($_GET))
 	{
@@ -51,8 +67,8 @@ mb_internal_encoding("UTF-8");
 		    array_push($results,$row);
 		}
 
-		$ret=json_encode($results);
-		$ans= packjson($ret);
+		//$ret=json_encode($results);
+		$ans=myjson($results);
 		echo $ans;
 	}
 	else

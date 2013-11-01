@@ -31,6 +31,7 @@
 	<script type="text/javascript">
 		var currentPosition=6;
 		var availableCache=0;
+		var clearFlag=0;
 		var dialogCache=new Array();
 		function beginChapter(position,ending,endingFunction)
 		{
@@ -41,18 +42,43 @@
 			  method: "get",
 			  data: {"id":position,"size":50},
 			  success: function(data){
-			  	say(data[0].words,data[0].swipescreen,data[0].linebreak,data[0].position,data[0].voice,data[0].bgm,data[0].se,function(){});
-
+			  	say(data[0].words,data[0].swipescreen,data[0].linebreak,data[0].location,data[0].voice,data[0].bgm,data[0].se,function(){});
+			  	currentPosition+=1;
 			  	setTimeout(cacheResources(data,50),0);
-				/*while(currentPosition<ending)
-				{
-					$("#mainFrame").bind("click",function(e){
-						//sayTheNextThing();
-					})
-				}*/
-				if(typeof(endingFunction)==='function')
-					endingFunction();
-				  }
+			  	$("#mainFrame").bind("click",function(e){
+			  		var currentFrame=dialogCache[currentPosition];
+			  		say(currentFrame.words,
+			  			currentFrame.swipescreen,
+			  			currentFrame.linebreak,
+			  			currentFrame.location,
+			  			currentFrame.voice,
+			  			currentFrame.bgm,
+			  			currentFrame.se,
+			  			function(){
+
+			  		});
+			  		currentPosition+=1;
+			  		availableCache-=1;
+			  		if(currentPosition-availableCache<=10)
+			  		{
+			  			$.ajax({
+						  dataType: "json",
+						  url: "getContent.php",
+						  method: "get",
+						  data: {"id":currentPosition+9,"size":50},
+						  success: function(data){
+						  	cacheResources(data,50);
+						  }
+			  			});
+			  		}
+			  		if(currentPosition===ending)
+			  		{
+			  			$("#mainFrame").unbind('click');
+			  			if(typeof(endingFunction)==='function')
+							endingFunction();
+				  	}
+			  	});
+			  }
 			});
 		}
 		function cacheResources(data,length)
@@ -65,6 +91,7 @@
 			{
 				console.log(i);
 				console.log(data[i]);
+				dialogCache[data[i].location]=data[i];
 				if(data[i].voice!="0"&&data[i].voice)
 				{
 					var t=new Audio();
@@ -89,13 +116,8 @@
 					t.src="pic/lh/"+data[i].lh;
 					imageCache.push(t);
 				}
-				if(data[i].words)
-				{
-					dialogCache[data[i].location]=data[i].words;
-				}
-				availableCache+=length;
 			}
-
+			availableCache=dialogCache.length;
 		}
 
 		function appendBlackbg()
@@ -188,19 +210,24 @@
 		}
 		function say(words,clear,linebreak,id,voicenum,bgmnum,senum,additionalFunction)
 		{
-			if(clear)
+			if(clearFlag===1)
+			{
 				$("#talkbox").html("");
-			if(linebreak)
+				clearFlag=0;
+			}
+			if(clear==='1')
+				clearFlag=1;
+			if(linebreak==='1')
 				$("#talkbox").append("<span id='talk"+id+"'>"+words+"</span><br/>");
 			else
 				$("#talkbox").append("<span id='talk"+id+"'>"+words+"</span>");
-			if(voicenum)
+			if(voicenum!="0")
 				playMusic("voice","k/k%20("+voicenum+").ogg");
-			if(bgmnum)
+			if(bgmnum!="0")
 				playMusic("bgm","bgm/bgm0"+bgmnum+".ogg");
-			if(senum)
-				playMusic("voice","se/se0"+senum+".ogg");
-			$("#talk"+voicenum).typewrite({
+			if(senum!="0")
+				playMusic("se","se/se0"+senum+".ogg");
+			$("#talk"+id).typewrite({
 			    'delay': 40, 		//time in ms between each letter
 			    'extra_char': '', 	//"cursor" character to append after each display
 			    'trim': true, 		// Trim the string to type (Default: false, does not trim)
@@ -241,13 +268,13 @@
 									},500);
 									addBlock("bottom","talkbox","",640,130,0);
 									//words,clear,linebreak,id,voicenum,bgmnum,senum,additionalFunction
-									say("……欢迎大家光临天象馆……",1,1,"1",1,0,0,function(){
+									say("……欢迎大家光临天象馆……","1","1","1",1,0,0,function(){
 										$("#mainFrame").one('click',function(e){
-											say("……这里有着无论何时都决不会消失的，美丽的无穷光辉……",1,1,"2",2,0,0,function(){
+											say("……这里有着无论何时都决不会消失的，美丽的无穷光辉……","1","1","2",2,0,0,function(){
 												$("#mainFrame").one('click',function(e){
-													say("……满天的星星们正在等待着大家的到来……",1,1,"3",3,0,0,function(){
+													say("……满天的星星们正在等待着大家的到来……","1","1","3",3,0,0,function(){
 														$("#mainFrame").one('click',function(e){
-															say("……欢迎大家光临天象馆……",1,1,"4",4,0,0,function(){
+															say("……欢迎大家光临天象馆……","1","1","4",4,0,0,function(){
 																//resizing animation
 																var myTransition = ($.browser.webkit)  ? '-webkit-transition' :
 															                       ($.browser.mozilla) ? '-moz-transition' : 
@@ -285,7 +312,7 @@
 
 								    											// Fire Up!
 								    											// Main Entry Here.
-								    											beginChapter(6,100,function(){});
+								    											beginChapter(6,500,function(){});
 								    										});
 								    										$("#intro_scroll").css(
 								    											{
@@ -364,7 +391,7 @@
 <body>
 	<div id="mainFrame">
 	</div>
-	<audio src="" id="bgm" controls></audio>
+	<audio src="" id="bgm" loop controls></audio>
 	<audio src="" id="se"></audio>
 	<audio src="" id="voice"></audio>
 	
