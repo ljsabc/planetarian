@@ -1,0 +1,6 @@
+<?php
+	$username="";
+	$host="";
+	$password="";
+	$db="";
+?>

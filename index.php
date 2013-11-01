@@ -201,6 +201,7 @@
 													       				myCSSObj = {};
 																		myCSSObj[myTransition] = 'none';
 								    									$("#intro_scroll").css(myCSSObj);
+								    									$("#talkbox").html("");
 								    									$("#intro_scroll").fadeOut(1000,function(){
 								    										$("#intro_scroll").fadeIn(1000,function(){
 								    											addBlock("top","intro_logo","pic/cg/op20(0000).png",640,440,17);
@@ -290,5 +291,6 @@
 	<audio src="" id="bgm" controls></audio>
 	<audio src="" id="se"></audio>
 	<audio src="" id="voice"></audio>
+	
 </body>
 </html>
