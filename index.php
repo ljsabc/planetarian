@@ -57,6 +57,7 @@
 			  			function(){
 
 			  		});
+
 			  		currentPosition+=1;
 			  		availableCache-=1;
 			  		if(availableCache-currentPosition<=10)
@@ -207,6 +208,14 @@
 			if(src)
 				$("#"+target).attr("src",src);
 			$("#"+target).trigger("play");
+		}
+		
+		function clearscreen(timeout,callback)
+		{
+			$("#mainFrame").children().fadeOut(timeout);
+			setTimeout(timeout*1.1,function(){
+				$("#mainFrame").html("");
+			});
 		}
 		function say(words,clear,linebreak,id,voicenum,bgmnum,senum,additionalFunction)
 		{
@@ -379,6 +388,39 @@
 
 			        jQuery.browser = browser;
 			}
+			/* initialization cache push*/
+			var startAudioCache=new Array();
+			var startImgCache=new Array();
+			var ta=new Array();
+			ta[0]="k/k%20(0).ogg";
+			ta[1]="k/k%20(1).ogg";
+			ta[2]="k/k%20(2).ogg";
+			ta[3]="k/k%20(3).ogg";
+			for(i=0;i<4;i++)
+			{
+				var tAudio=new Audio();
+				tAudio.src=ta[i];
+				startAudioCache.push(tAudio);
+			}
+			var ti=new Array();
+			ti[0]="pic/cg/01.png";
+			ti[1]="pic/cg/02.png";
+			ti[2]="pic/cg/op10(0000).png";
+			ti[3]="pic/cg/op11(0000).png";
+			ti[4]="pic/cg/op12(0000).png";
+			ti[5]="pic/cg/op20(0000).png";
+			ti[6]="pic/g.png";
+			ti[7]="pic/intro_scroll.png";
+			ti[8]="pic/bg27o_11.png";		
+			ti[9]="pic/bg27o_01.png";
+			for(i=0;i<10;i++)
+			{
+				var tImg=new Image();
+				tImg.src=ti[i];
+				startImgCache.push(tImg);
+			}
+			
+
 			crossFade($("#mainFrame"),1000);
 			playMusic("bgm","bgm/bgm04.ogg");
 			$("#mainFrame").one("click",function(e){
