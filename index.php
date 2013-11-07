@@ -31,15 +31,17 @@
 			z-index: 1;
 		}
 		#talkbox{
-			font-size: 20px;
+			font-size: 19px;
 			color:#CCC;
 			z-index: 3;
-			text-shadow: 1px 2px 1px rgba(192, 192, 192, 0.8);
+			font-family: "Hiragino Sans GB","WenQuanYi Micro Hei","Microsoft Yahei","Simsun";
+			text-shadow: 1px 0px 0px rgba(64, 64, 64, 0.8);
 			 -moz-user-select: -moz-none;
 			 -khtml-user-select: none;
 			 -webkit-user-select: none;
 			 -ms-user-select: none;
 			 user-select: none;
+			 cursor:pointer;
 		}
 	</style>
 	<script type="text/javascript" src="jquery.js"></script>
@@ -391,7 +393,7 @@
 										    											addBlock("top","lh","",800,600,0);
 										    											$("#talkbox").css({
 										    												"padding":"8px 80px 8px 80px",
-										    												"line-height":"1.4em",
+										    												"line-height":"1.5em",
 										    												"color":"#EEE",
 										    												"left":"0px"
 										    											});
