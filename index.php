@@ -21,9 +21,25 @@
 			background-color: #000;
 			display: none;
 		}
+		#bg{
+			z-index: 0;
+		}
+		#lh{
+			z-index: 2;
+		}
+		#topimg{
+			z-index: 1;
+		}
 		#talkbox{
-			font-size: 18px;
+			font-size: 20px;
 			color:#CCC;
+			z-index: 3;
+			text-shadow: 1px 2px 1px rgba(192, 192, 192, 0.8);
+			 -moz-user-select: -moz-none;
+			 -khtml-user-select: none;
+			 -webkit-user-select: none;
+			 -ms-user-select: none;
+			 user-select: none;
 		}
 	</style>
 	<script type="text/javascript" src="jquery.js"></script>
@@ -32,6 +48,7 @@
 		var currentPosition=6;
 		var availableCache=0;
 		var clearFlag=0;
+		var speakLock=0;
 		var dialogCache=new Array();
 		function beginChapter(position,ending,endingFunction)
 		{
@@ -46,38 +63,54 @@
 			  	currentPosition+=1;
 			  	setTimeout(cacheResources(data,50),0);
 			  	$("#mainFrame").bind("click",function(e){
-			  		var currentFrame=dialogCache[currentPosition];
-			  		say(currentFrame.words,
-			  			currentFrame.swipescreen,
-			  			currentFrame.linebreak,
-			  			currentFrame.location,
-			  			currentFrame.voice,
-			  			currentFrame.bgm,
-			  			currentFrame.se,
-			  			function(){
-
-			  		});
-
-			  		currentPosition+=1;
-			  		availableCache-=1;
-			  		if(availableCache-currentPosition<=10)
+			  		if(speakLock===0)
 			  		{
-			  			$.ajax({
-						  dataType: "json",
-						  url: "getContent.php",
-						  method: "get",
-						  data: {"id":currentPosition+9,"size":50},
-						  success: function(data){
-						  	cacheResources(data,50);
-						  }
-			  			});
+			  			speakLock=1;
+			  			var currentFrame=dialogCache[currentPosition];
+				  		say(currentFrame.words,
+				  			currentFrame.swipescreen,
+				  			currentFrame.linebreak,
+				  			currentFrame.location,
+				  			currentFrame.voice,
+				  			currentFrame.bgm,
+				  			currentFrame.se,
+				  			function(){
+
+				  		});
+				  		if(currentFrame.lh!='')
+				  		{
+				  			console.log(currentFrame.lh);
+				  			changeImage("lh",currentFrame.lh,0,null);
+				  		}
+				  		if(currentFrame.bg!='')
+				  		{
+				  			changeImage("bg",currentFrame.bg,0,null);
+				  		}
+				  		if(currentFrame.topimg!='')
+				  		{
+				  			changeImage("topimg",currentFrame.topimg,0,null);
+				  		}
+				  		currentPosition+=1;
+				  		//availableCache-=1;
+				  		if(availableCache-currentPosition<=10)
+				  		{
+				  			$.ajax({
+							  dataType: "json",
+							  url: "getContent.php",
+							  method: "get",
+							  data: {"id":currentPosition+9,"size":50},
+							  success: function(data){
+							  	cacheResources(data,50);
+							  }
+				  			});
+				  		}
+				  		if(currentPosition===ending)
+				  		{
+				  			$("#mainFrame").unbind('click');
+				  			if(typeof(endingFunction)==='function')
+								endingFunction();
+					  	}
 			  		}
-			  		if(currentPosition===ending)
-			  		{
-			  			$("#mainFrame").unbind('click');
-			  			if(typeof(endingFunction)==='function')
-							endingFunction();
-				  	}
 			  	});
 			  }
 			});
@@ -140,14 +173,16 @@
 				{
 					$("#"+id).css("top",margin+"px");
 					$("#"+id).css("left",(800-width)/2+"px");
-					$("#"+id).css("background-image","url('"+element+"')");
+					if(element!='')
+						$("#"+id).css("background-image","url('"+element+"')");
 					break;
 				}
 				case "bottom":
 				{
 					$("#"+id).css("bottom",margin+"px");
 					$("#"+id).css("left",(800-width)/2+"px");
-					$("#"+id).css("background-image","url('"+element+"')");
+					if(element!='')
+						$("#"+id).css("background-image","url('"+element+"')");
 					break;
 				}
 			}
@@ -209,13 +244,40 @@
 				$("#"+target).attr("src",src);
 			$("#"+target).trigger("play");
 		}
-		
-		function clearscreen(timeout,callback)
+		function changeImage(source,target,fade,callback)
+		{
+			//fade not implemented yet/
+			console.log(source,target);
+			switch(source)
+			{
+				case "bg":
+				{
+					$("#bg").css("background-image","url('pic/"+target+"')");
+					console.log("bg done");
+					break;
+				}
+				case "topimg":
+				{
+					$("#topimg").css("background-image","url('pic/"+target+"')");
+					console.log("topimg done");
+					break;
+				}
+				case "lh":
+				{
+					$("#lh").css("background-image","url('pic/lh/"+target+"')");
+					console.log("lh done");
+					break;
+				}
+			}
+		}
+		function clearScreen(timeout,callback)
 		{
 			$("#mainFrame").children().fadeOut(timeout);
-			setTimeout(timeout*1.1,function(){
+			setTimeout(function(){
 				$("#mainFrame").html("");
-			});
+				if(typeof(callback)==='function')
+					callback();
+			},timeout);
 		}
 		function say(words,clear,linebreak,id,voicenum,bgmnum,senum,additionalFunction)
 		{
@@ -240,7 +302,7 @@
 			    'delay': 25, 		//time in ms between each letter
 			    'extra_char': '', 	//"cursor" character to append after each display
 			    'trim': true, 		// Trim the string to type (Default: false, does not trim)
-			    'callback': null 	// if exists, called after all effects have finished
+			    'callback': function(){speakLock=0;} 	// if exists, called after all effects have finished
 			});
 			if(typeof(additionalFunction)==='function')
 				additionalFunction();
@@ -317,11 +379,25 @@
 								    										$("#intro_scroll").fadeIn(1000,function(){
 								    											addBlock("top","intro_logo","pic/cg/op20(0000).png",640,440,17);
 								    											$("#intro_logo").css("background-size","cover");
-								    											$("#intro_logo").hide().fadeIn(1000);
-
-								    											// Fire Up!
-								    											// Main Entry Here.
-								    											beginChapter(6,500,function(){});
+								    											$("#intro_logo").hide().fadeIn(2000,function(){
+									    											clearScreen(1500,function(){
+									    												// Fire Up!
+									    												// Main Entry Here.
+									    												$("#mainFrame").css("background-image","none");
+									    												$("#topimg").css("background-image","none");
+										    											addBlock("top","topimg","pic/w1.png",640,320,15);
+										    											addBlock("bottom","talkbox","pic/talkbox.png",640,210,20);
+										    											addBlock("top","bg","pic/system/k.png",800,600,0);
+										    											addBlock("top","lh","",800,600,0);
+										    											$("#talkbox").css({
+										    												"padding":"8px 80px 8px 80px",
+										    												"line-height":"1.4em",
+										    												"color":"#EEE",
+										    												"left":"0px"
+										    											});
+										    											beginChapter(6,500,function(){});
+									    											});									    											
+								    											});
 								    										});
 								    										$("#intro_scroll").css(
 								    											{
